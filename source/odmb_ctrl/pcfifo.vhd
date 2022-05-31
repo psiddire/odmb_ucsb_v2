@@ -88,25 +88,25 @@ begin
   fifo_in   <= first_in & ld_in & data_in;
 
   L1ARESETPULSE : NPULSE2FAST port map(fifo_rst, CLK_OUT, '0', 5, RST);
-  PC_FIFO_CASCADE : FIFO_CASCADE
-    generic map (
-      NFIFO        => NFIFO,            -- number of FIFOs in cascade
-      DATA_WIDTH   => 18,               -- With of data packets
-      WR_FASTER_RD => true)   -- Set int_clk to WRCLK if faster than RDCLK
+  --PC_FIFO_CASCADE : FIFO_CASCADE
+  --  generic map (
+  --    NFIFO        => NFIFO,            -- number of FIFOs in cascade
+  --    DATA_WIDTH   => 18,               -- With of data packets
+  --    WR_FASTER_RD => true)   -- Set int_clk to WRCLK if faster than RDCLK
 
-    port map(
-      DO        => fifo_out,            -- Output data
-      EMPTY     => fifo_empty,          -- Output empty
-      FULL      => fifo_full,           -- Output full
-      HALF_FULL => open,
+  --  port map(
+  --    DO        => fifo_out,            -- Output data
+  --    EMPTY     => fifo_empty,          -- Output empty
+  --    FULL      => fifo_full,           -- Output full
+  --    HALF_FULL => open,
 
-      DI    => fifo_in,                 -- Input data
-      RDCLK => clk_out,                 -- Input read clock
-      RDEN  => pcfifo_rden,             -- Input read enable
-      RST   => fifo_rst,                     -- Input reset
-      WRCLK => clk_in,                  -- Input write clock
-      WREN  => fifo_wren                -- Input write enable
-      );
+  --    DI    => fifo_in,                 -- Input data
+  --    RDCLK => clk_out,                 -- Input read clock
+  --    RDEN  => pcfifo_rden,             -- Input read enable
+  --    RST   => fifo_rst,                     -- Input reset
+  --    WRCLK => clk_in,                  -- Input write clock
+  --    WREN  => fifo_wren                -- Input write enable
+  --    );
 
   pcfifo_out   <= fifo_out(15 downto 0);
   pcfifo_ld    <= fifo_out(16);

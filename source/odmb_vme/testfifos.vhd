@@ -353,26 +353,26 @@ begin  --Architecture
 
   pc_data_frame_wren <= pc_tx_mask and pc_data_frame_valid;
 
-  PC_TX_FIFO_CASCADE : FIFO_CASCADE
-    generic map (
-      NFIFO        => 4,                -- number of FIFOs in cascade
-      DATA_WIDTH   => 16,               -- With of data packets
-      FWFT         => true,             -- First word fall through
-      WR_FASTER_RD => true)  -- Set int_clk to WRCLK if faster than RDCLK
+  --PC_TX_FIFO_CASCADE : FIFO_CASCADE
+  --  generic map (
+  --    NFIFO        => 4,                -- number of FIFOs in cascade
+  --    DATA_WIDTH   => 16,               -- With of data packets
+  --    FWFT         => true,             -- First word fall through
+  --    WR_FASTER_RD => true)  -- Set int_clk to WRCLK if faster than RDCLK
 
-    port map(
-      DO        => pc_tx_fifo_dout,     -- Output data
-      EMPTY     => pc_tx_fifo_empty,    -- Output empty
-      FULL      => pc_tx_fifo_full,     -- Output full
-      HALF_FULL => open,
+  --  port map(
+  --    DO        => pc_tx_fifo_dout,     -- Output data
+  --    EMPTY     => pc_tx_fifo_empty,    -- Output empty
+  --    FULL      => pc_tx_fifo_full,     -- Output full
+  --    HALF_FULL => open,
 
-      DI    => pc_data_frame,           -- Input data
-      RDCLK => SLOWCLK,                 -- Input read clock
-      RDEN  => pc_tx_fifo_rden,         -- Input read enable
-      RST   => pc_tx_fifo_rst,          -- Input reset
-      WRCLK => pcclk,                   -- Input write clock
-      WREN  => pc_data_frame_wren       -- Input write enable
-      );
+  --    DI    => pc_data_frame,           -- Input data
+  --    RDCLK => SLOWCLK,                 -- Input read clock
+  --    RDEN  => pc_tx_fifo_rden,         -- Input read enable
+  --    RST   => pc_tx_fifo_rst,          -- Input reset
+  --    WRCLK => pcclk,                   -- Input write clock
+  --    WREN  => pc_data_frame_wren       -- Input write enable
+  --    );
 
   PC_TX_WRD_COUNT : FIFOWORDS
     port map(RST   => pc_tx_fifo_rst, WRCLK => pcclk, WREN => pc_data_frame_wren,
@@ -421,26 +421,26 @@ begin  --Architecture
 
   ddu_data_wren <= ddu_tx_mask and ddu_data_valid;
 
-  DDU_TX_FIFO_CASCADE : FIFO_CASCADE
-    generic map (
-      NFIFO        => 4,                -- number of FIFOs in cascade
-      DATA_WIDTH   => 16,               -- With of data packets
-      FWFT         => true,             -- First word fall through
-      WR_FASTER_RD => true)  -- Set int_clk to WRCLK if faster than RDCLK
+  --DDU_TX_FIFO_CASCADE : FIFO_CASCADE
+  --  generic map (
+  --    NFIFO        => 4,                -- number of FIFOs in cascade
+  --    DATA_WIDTH   => 16,               -- With of data packets
+  --    FWFT         => true,             -- First word fall through
+  --    WR_FASTER_RD => true)  -- Set int_clk to WRCLK if faster than RDCLK
 
-    port map(
-      DO        => ddu_tx_fifo_dout,    -- Output data
-      EMPTY     => ddu_tx_fifo_empty,   -- Output empty
-      FULL      => ddu_tx_fifo_full,    -- Output full
-      HALF_FULL => open,
+  --  port map(
+  --    DO        => ddu_tx_fifo_dout,    -- Output data
+  --    EMPTY     => ddu_tx_fifo_empty,   -- Output empty
+  --    FULL      => ddu_tx_fifo_full,    -- Output full
+  --    HALF_FULL => open,
 
-      DI    => ddu_data,                -- Input data
-      RDCLK => SLOWCLK,                 -- Input read clock
-      RDEN  => ddu_tx_fifo_rden,        -- Input read enable
-      RST   => ddu_tx_fifo_rst,         -- Input reset
-      WRCLK => dduclk,                  -- Input write clock
-      WREN  => ddu_data_wren            -- Input write enable
-      );
+  --    DI    => ddu_data,                -- Input data
+  --    RDCLK => SLOWCLK,                 -- Input read clock
+  --    RDEN  => ddu_tx_fifo_rden,        -- Input read enable
+  --    RST   => ddu_tx_fifo_rst,         -- Input reset
+  --    WRCLK => dduclk,                  -- Input write clock
+  --    WREN  => ddu_data_wren            -- Input write enable
+  --    );
 
   DDU_TX_WRD_COUNT : FIFOWORDS
     port map(RST   => ddu_tx_fifo_rst, WRCLK => dduclk, WREN => ddu_data_wren,
@@ -645,26 +645,26 @@ begin  --Architecture
                                     DDU_DATA(15 downto 12) = x"F" or DDU_DATA(15 downto 12) = x"E" or
                                     DDU_DATA(15 downto 12) = x"8")) else '0';
 
-  HDR_FIFO_CASCADE : FIFO_CASCADE
-    generic map (
-      NFIFO        => 4,                -- number of FIFOs in cascade
-      DATA_WIDTH   => 16,               -- With of data packets
-      FWFT         => true,             -- First word fall through
-      WR_FASTER_RD => true)  -- Set int_clk to WRCLK if faster than RDCLK
+  --HDR_FIFO_CASCADE : FIFO_CASCADE
+  --  generic map (
+  --    NFIFO        => 4,                -- number of FIFOs in cascade
+  --    DATA_WIDTH   => 16,               -- With of data packets
+  --    FWFT         => true,             -- First word fall through
+  --    WR_FASTER_RD => true)  -- Set int_clk to WRCLK if faster than RDCLK
 
-    port map(
-      DO        => hdr_fifo_dout,       -- Output data
-      EMPTY     => hdr_fifo_empty,      -- Output empty
-      FULL      => hdr_fifo_full,       -- Output full
-      HALF_FULL => open,
+  --  port map(
+  --    DO        => hdr_fifo_dout,       -- Output data
+  --    EMPTY     => hdr_fifo_empty,      -- Output empty
+  --    FULL      => hdr_fifo_full,       -- Output full
+  --    HALF_FULL => open,
 
-      DI    => DDU_DATA,                -- Input data
-      RDCLK => slowclk,                 -- Input read clock
-      RDEN  => hdr_fifo_rden,           -- Input read enable
-      RST   => hdr_fifo_reset,          -- Input reset
-      WRCLK => DDUCLK,                  -- Input write clock
-      WREN  => hdr_fifo_data_valid      -- Input write enable
-      );
+  --    DI    => DDU_DATA,                -- Input data
+  --    RDCLK => slowclk,                 -- Input read clock
+  --    RDEN  => hdr_fifo_rden,           -- Input read enable
+  --    RST   => hdr_fifo_reset,          -- Input reset
+  --    WRCLK => DDUCLK,                  -- Input write clock
+  --    WREN  => hdr_fifo_data_valid      -- Input write enable
+  --    );
 
   HDR_WRD_COUNT : FIFOWORDS
     generic map(12)

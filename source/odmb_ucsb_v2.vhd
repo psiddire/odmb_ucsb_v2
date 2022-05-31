@@ -933,6 +933,34 @@ architecture ODMB_UCSB_V2_ARCH of ODMB_UCSB_V2 is
       );
   end component;
 
+  COMPONENT odmb7_ibert IS
+    PORT (
+      X0Y4_TX_P_OPAD : OUT STD_LOGIC;
+      X0Y4_TX_N_OPAD : OUT STD_LOGIC;
+      X0Y5_TX_P_OPAD : OUT STD_LOGIC;
+      X0Y5_TX_N_OPAD : OUT STD_LOGIC;
+      X0Y4_RXRECCLK_O : OUT STD_LOGIC;
+      X0Y4_RX_P_IPAD : IN STD_LOGIC;
+      X0Y4_RX_N_IPAD : IN STD_LOGIC;
+      X0Y5_RX_P_IPAD : IN STD_LOGIC;
+      X0Y5_RX_N_IPAD : IN STD_LOGIC;
+      Q1_CLK0_MGTREFCLK_I : IN STD_LOGIC;
+      CONTROL : INOUT STD_LOGIC_VECTOR(35 downto 0);
+      IBERT_SYSCLOCK_I : IN STD_LOGIC
+    );
+  END COMPONENT odmb7_ibert;
+  COMPONENT odmb7_icon
+    port (
+      CONTROL0 : INOUT STD_LOGIC_VECTOR(35 downto 0));
+  END COMPONENT;
+
+  -- Local Signal Declarations
+  SIGNAL q1_clk0_mgtrefclk : STD_LOGIC;
+  SIGNAL ibert_sysclock : STD_LOGIC;
+  SIGNAL x0y4_rxrecclk : STD_LOGIC;
+  SIGNAL x0y4_rxrecclk_oddr_out : STD_LOGIC;
+  SIGNAL CONTROL0_ibert : STD_LOGIC_VECTOR(35 downto 0);
+
   constant NFIFO : integer := 4;
 
 -- Global signals
@@ -1394,6 +1422,31 @@ architecture ODMB_UCSB_V2_ARCH of ODMB_UCSB_V2 is
 
 begin
   
+  -- Ibert Core Wrapper Instance
+  U_ODMB7_IBERT: odmb7_ibert
+    PORT MAP (
+      X0Y4_TX_P_OPAD => gl1_tx_p,
+      X0Y4_TX_N_OPAD => gl1_tx_n,
+      X0Y5_TX_P_OPAD => gl0_tx_p,
+      X0Y5_TX_N_OPAD => gl0_tx_n,
+      X0Y4_RXRECCLK_O => x0y4_rxrecclk,
+      X0Y4_RX_P_IPAD => gl1_rx_p,
+      X0Y4_RX_N_IPAD => gl1_rx_n,
+      X0Y5_RX_P_IPAD => gl0_rx_p,
+      X0Y5_RX_N_IPAD => gl0_rx_n,
+      Q1_CLK0_MGTREFCLK_I => gl0_clk,
+      CONTROL => CONTROL0_ibert,
+      IBERT_SYSCLOCK_I => ibert_sysclock
+    );
+  U_ICON : odmb7_icon
+    PORT MAP (
+       CONTROL0 => CONTROL0_ibert);
+  -- GT Refclock Instances
+ ------ Refclk Q1-Refclk0 sources GT(s) X0Y7 X0Y6 X0Y5 X0Y4
+
+  -- Sysclock source
+  ibert_sysclock <= '0';
+
   csp_controller_pm : csp_controller
     port map (
       CONTROL0 => csp_control_fsm_port_la_ctrl,
@@ -1749,72 +1802,72 @@ begin
 
 ---------------------------  Optical tranceivers  ---------------------------
 -----------------------------------------------------------------------------
-  GIGALINK_DDU_PM : gigalink_ddu
-    generic map (SIM_SPEEDUP => IS_SIMULATION)
-    port map (
-      REF_CLK_80 => gl0_clk,            -- 80 MHz for DDU data rate
-      RST        => opt_reset,
-      USRCLK     => dduclk,
-      -- Transmitter signals
-      TXD        => ddu_data,           -- Data to be transmitted
-      TXD_VLD    => ddu_data_valid,     -- Flag for valid data;
-      TX_DDU_N   => gl0_tx_n,           -- GTX transmit data out - signal
-      TX_DDU_P   => gl0_tx_p,           -- GTX transmit data out + signal
-      TXDIFFCTRL => txdiffctrl,         -- Controls the TX voltage swing
-      LOOPBACK   => loopback,           -- For internal loopback tests
+--  GIGALINK_DDU_PM : gigalink_ddu
+--    generic map (SIM_SPEEDUP => IS_SIMULATION)
+--    port map (
+--      REF_CLK_80 => gl0_clk,            -- 80 MHz for DDU data rate
+--      RST        => opt_reset,
+--      USRCLK     => dduclk,
+--      -- Transmitter signals
+--      TXD        => ddu_data,           -- Data to be transmitted
+--      TXD_VLD    => ddu_data_valid,     -- Flag for valid data;
+--      TX_DDU_N   => gl0_tx_n,           -- GTX transmit data out - signal
+--      TX_DDU_P   => gl0_tx_p,           -- GTX transmit data out + signal
+--      TXDIFFCTRL => txdiffctrl,         -- Controls the TX voltage swing
+--      LOOPBACK   => loopback,           -- For internal loopback tests
+--
+--      -- Receiver signals
+--      RX_DDU_N => gl0_rx_buf_n,         -- GTX receive data in - signal
+--      RX_DDU_P => gl0_rx_buf_p,         -- GTX receive data in + signal
+--      RXD      => ddu_rx_data,
+--      RXD_VLD  => ddu_rx_data_valid,
+--      BAD_RX   => ddu_bad_rx,
+--
+--      -- DDU PRBS signals
+--      PRBS_TYPE       => prbs_type,
+--      PRBS_TX_EN      => ddu_prbs_tx_en,
+--      PRBS_RX_EN      => ddu_prbs_rx_en,
+--      PRBS_EN_TST_CNT => ddu_prbs_en_tst_cnt,
+--      PRBS_ERR_CNT    => ddu_prbs_err_cnt,
+--
+--      -- DDU monitoring
+--      TXPLLLKDET => ddu_txplllkdet
+--      );
 
-      -- Receiver signals
-      RX_DDU_N => gl0_rx_buf_n,         -- GTX receive data in - signal
-      RX_DDU_P => gl0_rx_buf_p,         -- GTX receive data in + signal
-      RXD      => ddu_rx_data,
-      RXD_VLD  => ddu_rx_data_valid,
-      BAD_RX   => ddu_bad_rx,
-
-      -- DDU PRBS signals
-      PRBS_TYPE       => prbs_type,
-      PRBS_TX_EN      => ddu_prbs_tx_en,
-      PRBS_RX_EN      => ddu_prbs_rx_en,
-      PRBS_EN_TST_CNT => ddu_prbs_en_tst_cnt,
-      PRBS_ERR_CNT    => ddu_prbs_err_cnt,
-
-      -- DDU monitoring
-      TXPLLLKDET => ddu_txplllkdet
-      );
-
-  GIGALINK_PC_PM : gigalink_pc
-    generic map (SIM_SPEEDUP => IS_SIMULATION)
-    port map (
-      RST     => opt_reset,
-      REFCLK  => gl1_clk,
-      -- Transmitter signals
-      TXD     => pc_data,               -- Data to be transmitted
-      TXD_VLD => pc_data_valid,         -- Flag for valid data;
-      TX_ACK  => gl_pc_tx_ack,  -- TX acknowledgement (ethernet header has finished)
-      TXD_N   => gl1_tx_n,              -- GTX transmit data out - signal
-      TXD_P   => gl1_tx_p,              -- GTX transmit data out + signal
-      USRCLK  => pcclk,
-
-      TXDIFFCTRL  => txdiffctrl,        -- Controls the TX voltage swing
-      LOOPBACK    => loopback,          -- For internal loopback tests
-      ROM_CNT_OUT => ROM_CNT_OUT,
-
-      -- Receiver signals
-      RXD_N   => gl1_rx_buf_n,          -- GTX receive data in - signal
-      RXD_P   => gl1_rx_buf_p,          -- GTX receive data in + signal
-      RXD     => pc_rx_data,
-      RXD_VLD => pc_rx_data_valid,
-      BAD_RX  => pc_bad_rx,
-
-      TX_FIFO_WREN_OUT => pc_data_frame_valid,
-      TXD_FRAME_OUT    => pc_data_frame,
-
-      -- PC PRBS signals
-      PRBS_TYPE       => prbs_type,
-      PRBS_TX_EN      => pc_prbs_tx_en,
-      PRBS_RX_EN      => pc_prbs_rx_en,
-      PRBS_EN_TST_CNT => pc_prbs_en_tst_cnt,
-      PRBS_ERR_CNT    => pc_prbs_err_cnt
-      );
+--  GIGALINK_PC_PM : gigalink_pc
+--    generic map (SIM_SPEEDUP => IS_SIMULATION)
+--    port map (
+--      RST     => opt_reset,
+--      REFCLK  => gl1_clk,
+--      -- Transmitter signals
+--      TXD     => pc_data,               -- Data to be transmitted
+--      TXD_VLD => pc_data_valid,         -- Flag for valid data;
+--      TX_ACK  => gl_pc_tx_ack,  -- TX acknowledgement (ethernet header has finished)
+--      TXD_N   => gl1_tx_n,              -- GTX transmit data out - signal
+--      TXD_P   => gl1_tx_p,              -- GTX transmit data out + signal
+--      USRCLK  => pcclk,
+--
+--      TXDIFFCTRL  => txdiffctrl,        -- Controls the TX voltage swing
+--      LOOPBACK    => loopback,          -- For internal loopback tests
+--      ROM_CNT_OUT => ROM_CNT_OUT,
+--
+--      -- Receiver signals
+--      RXD_N   => gl1_rx_buf_n,          -- GTX receive data in - signal
+--      RXD_P   => gl1_rx_buf_p,          -- GTX receive data in + signal
+--      RXD     => pc_rx_data,
+--      RXD_VLD => pc_rx_data_valid,
+--      BAD_RX  => pc_bad_rx,
+--
+--      TX_FIFO_WREN_OUT => pc_data_frame_valid,
+--      TXD_FRAME_OUT    => pc_data_frame,
+--
+--      -- PC PRBS signals
+--      PRBS_TYPE       => prbs_type,
+--      PRBS_TX_EN      => pc_prbs_tx_en,
+--      PRBS_RX_EN      => pc_prbs_rx_en,
+--      PRBS_EN_TST_CNT => pc_prbs_en_tst_cnt,
+--      PRBS_ERR_CNT    => pc_prbs_err_cnt
+--      );
 
 
   DMB_RX_PM : dmb_receiver
@@ -1963,19 +2016,19 @@ begin
         );
 
     data_fifo_we(I) <= eofgen_dcfeb_data_valid(I) and datafifo_mask and not dcfeb_fifo_rst(I);
-    datafifo_dcfeb_pm : datafifo_dcfeb
-      port map(
-        rst       => dcfeb_fifo_rst(I),
-        wr_clk    => clk160,
-        rd_clk    => dduclk,
-        din       => eofgen_dcfeb_fifo_in(I),
-        wr_en     => data_fifo_we(I),
-        rd_en     => data_fifo_re(I),
-        dout      => dcfeb_fifo_out(I),
-        full      => dcfeb_fifo_full(I),
-        empty     => dcfeb_fifo_empty(I),
-        prog_full => data_fifo_half_full(I)
-        );
+    --datafifo_dcfeb_pm : datafifo_dcfeb
+    --  port map(
+    --    rst       => dcfeb_fifo_rst(I),
+    --    wr_clk    => clk160,
+    --    rd_clk    => dduclk,
+    --    din       => eofgen_dcfeb_fifo_in(I),
+    --    wr_en     => data_fifo_we(I),
+    --    rd_en     => data_fifo_re(I),
+    --    dout      => dcfeb_fifo_out(I),
+    --    full      => dcfeb_fifo_full(I),
+    --    empty     => dcfeb_fifo_empty(I),
+    --    prog_full => data_fifo_half_full(I)
+    --    );
 
     pulse_eof160(i) <= eofgen_dcfeb_fifo_in(I)(17) and not kill(i) and not bad_dcfeb_pulse_long(i);
     PULSEEOFDCFEB : PULSE2SLOW port map(pulse_eof40(i), clk40, clk160, reset, pulse_eof160(i));
@@ -2500,12 +2553,12 @@ begin
   end generate GEN_15;
 
 -- From OT1 (GigaBit Link)
-  gl0_rx_ibuf_p : IBUF port map (O => gl0_rx_buf_p, I => gl0_rx_p);
-  gl0_rx_ibuf_n : IBUF port map (O => gl0_rx_buf_n, I => gl0_rx_n);
+  -- gl0_rx_ibuf_p : IBUF port map (O => gl0_rx_buf_p, I => gl0_rx_p);
+  -- gl0_rx_ibuf_n : IBUF port map (O => gl0_rx_buf_n, I => gl0_rx_n);
 
 -- From OT2 (GigaBit Link)
-  gl1_rx_ibuf_p : IBUF port map (O => gl1_rx_buf_p, I => gl1_rx_p);
-  gl1_rx_ibuf_n : IBUF port map (O => gl1_rx_buf_n, I => gl1_rx_n);
+  -- gl1_rx_ibuf_p : IBUF port map (O => gl1_rx_buf_p, I => gl1_rx_p);
+  -- gl1_rx_ibuf_n : IBUF port map (O => gl1_rx_buf_n, I => gl1_rx_n);
 
 
 -- From ORX1
